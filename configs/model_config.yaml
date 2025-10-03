@@ -1,0 +1,119 @@
+# EMNIST Character Recognition - Model Configuration
+
+# Dataset Configuration
+dataset:
+  name: "emnist"
+  num_classes: 36
+  image_size: [28, 28]
+  channels: 1
+  data_dir: "data/emnist"
+  train_split: 0.7
+  val_split: 0.15
+  test_split: 0.15
+  normalize: true
+  augmentation:
+    enabled: true
+    rotation_range: 10
+    width_shift_range: 0.1
+    height_shift_range: 0.1
+    zoom_range: 0.1
+
+# Model Architecture Configuration
+models:
+  base_cnn:
+    name: "BaseCNN"
+    conv_layers:
+      - filters: 64
+        kernel_size: 3
+        activation: "relu"
+        batch_norm: true
+      - filters: 64
+        kernel_size: 3
+        activation: "relu"
+        batch_norm: true
+      - filters: 128
+        kernel_size: 3
+        activation: "relu"
+        batch_norm: true
+      - filters: 128
+        kernel_size: 3
+        activation: "relu"
+        batch_norm: true
+    fc_layers:
+      - units: 150
+        activation: "relu"
+        dropout: 0.4
+      - units: 36
+        activation: "softmax"
+    pooling: "max"
+    pool_size: 3
+    dropout_rates: [0.4, 0.3]
+
+  vgg13:
+    name: "CustomVGG13"
+    input_size: [32, 32]
+    conv_blocks:
+      - filters: 32
+        layers: 2
+      - filters: 64
+        layers: 2
+      - filters: 128
+        layers: 2
+    fc_layers:
+      - units: 512
+        dropout: 0.5
+      - units: 512
+        dropout: 0.5
+      - units: 36
+    activation: "relu"
+
+# Training Configuration
+training:
+  batch_size: 32
+  epochs: 20
+  learning_rate: 0.001
+  optimizer: "adam"
+  loss_function: "categorical_crossentropy"
+  metrics: ["accuracy", "precision", "recall", "f1_score"]
+
+  # Advanced optimization
+  scheduler:
+    type: "step"
+    step_size: 5
+    gamma: 0.1
+
+  early_stopping:
+    enabled: true
+    patience: 5
+    restore_best_weights: true
+
+  # Cross-validation
+  k_fold:
+    enabled: true
+    folds: 5
+    shuffle: true
+    random_state: 42
+
+# Hardware Configuration
+device:
+  use_gpu: true
+  mixed_precision: true
+  num_workers: 4
+
+# Experiment Tracking
+experiment:
+  name: "emnist_character_recognition"
+  tags: ["cnn", "emnist", "character_recognition"]
+  log_frequency: 100
+  save_checkpoints: true
+  checkpoint_frequency: 5
+
+# Inference Configuration
+inference:
+  model_path: "experiments/models/best_model.pth"
+  confidence_threshold: 0.8
+  batch_processing: true
+  preprocessing:
+    resize: [28, 28]
+    normalize: true
+    grayscale: true
